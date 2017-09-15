@@ -18,8 +18,7 @@
 
 // Other Includes
 
-
-
+ENGINE_NAMESPACE_BEGIN
 
 template<typename T> class owner;
 
@@ -30,7 +29,8 @@ template<typename T> class owner;
 template<typename T>
 class weak
 {
-    template<typename T> friend class owner;
+    template<typename T>             friend class owner;
+    template<typename T, typename U> friend weak<T> static_weak_cast(weak<U> u);
 
 public:
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -341,9 +341,19 @@ owner<T> make_owner(Args&&... args) {
     return owner<T>(new T(std::forward<Args>(args)...));
 }
 
+template<typename T, typename U>
+weak<T> static_weak_cast(weak<U> u) {
+    if (u.get() == nullptr)
+        return weak<T>(nullptr);
+    else
+        return weak<T>((T*)u._ptr, u._ptrValid, u._ptrRefCounter);
+}
+
 template<typename T>
 struct weak_less {
     bool operator() (const weak<T>& x, const weak<T>& y) const {
         return x.get() < y.get();
     }
 };
+
+ENGINE_NAMESPACE_END
