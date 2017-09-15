@@ -6,4 +6,4 @@ Et voilá, `owner<>` and `weak<>` were born! I'm currently using it in my privat
 ## faq
 *Why do I get memory leaks when using owner/weak with maps?*
 - Use `map.emplace()` (C++11) to insert objects into the map
-- Make sure your object has a destructor defines, even if its just `~MyClass() = default;`
+- Make sure your object has a destructor defined, even if its just `~MyClass() = default;`
