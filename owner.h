@@ -1,11 +1,17 @@
 #pragma once
 
+#define OWNER_VECTOR_EXT
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*                        Includes                        */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 // Std-Includes
 #include <utility>
+
+#ifdef  OWNER_VECTOR_EXT
+    #include <vector>
+#endif
 
 // MEMORY LEAK DETECTION
 //#define _CRTDBG_MAP_ALLOC
@@ -17,8 +23,6 @@
 //#endif
 
 // Other Includes
-
-ENGINE_NAMESPACE_BEGIN
 
 template<typename T> class owner;
 
@@ -116,11 +120,17 @@ public:
     inline T*      operator->() const { return _ptr; }
     inline T*      get()        const { return _ptr; }
 
-    inline bool operator== (const weak &y) const { return _ptr == y._ptr; }
-    inline bool operator!= (const weak &y) const { return !(_ptr == y._ptr); }
+    bool operator== (const weak &y) const { return _ptr == y._ptr; }
+    bool operator!= (const weak &y) const { return !(_ptr == y._ptr); }
+
+    template<typename U>
+    bool operator== (const owner<U> &y) const { return _ptr == y.get(); }
+
+    template<typename U>
+    bool operator!= (const owner<U> &y) const { return !(_ptr == y.get()); }
 
     // Determines if it's safe to use the ptr retrieved from get(). Does not ensure that the ptr is not null!
-    inline bool is_valid() const
+    inline bool ptr_is_valid() const
     { 
         return _isNullPtr ? true : (*_ptrValid);
     }
@@ -243,8 +253,8 @@ public:
         }
     }
 
-    inline T* operator->() { return _ptr; }
-    inline T* get() { return _ptr; }
+    inline T* operator->() const { return _ptr; }
+    inline T* get() const { return _ptr; }
     T* release() {
         T* oldPtr = _ptr;
         
@@ -265,6 +275,10 @@ public:
             invalidate_pointer();
             ref_count_dec();
             delete _ptr;
+
+            _ptr = nullptr;
+            _ptrValid = nullptr;
+            _ptrRefCounter = nullptr;
         }
     }
 
@@ -286,6 +300,12 @@ public:
 
         return *this;
     }
+
+    template<typename U>
+    bool            operator== (const weak<U> &y) const { return _ptr == y.get(); }
+
+    template<typename U>
+    bool            operator!= (const weak<U> &y) const { return !(_ptr == y.get()); }
 
     bool            operator== (const owner &other) const { return (_ptr == other._ptr); }
     bool            operator!= (const owner &other) const { return !(this == other); }
@@ -356,4 +376,30 @@ struct weak_less {
     }
 };
 
-ENGINE_NAMESPACE_END
+#ifdef  OWNER_VECTOR_EXT
+template<typename T>
+owner<T> extract_owner(std::vector<owner<T>>& vec, weak<T> ptr) {
+    auto it = vec.begin();
+    for (; it != vec.end(); ++it) {
+        if (it->get() == ptr.get()) break;
+    }
+
+    if (it != vec.end()) {
+        auto retval = std::move( *it );
+        vec.erase(it);
+        return std::move( retval );
+    }
+
+    return nullptr;
+}
+
+template<typename T>
+bool contains_owner(const std::vector<owner<T>>& vec, weak<T> ptr) {
+    auto it = vec.begin();
+    for (; it != vec.end(); ++it) {
+        if (it->get() == ptr.get()) break;
+    }
+
+    return it != vec.end();
+}
+#endif
