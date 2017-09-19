@@ -46,10 +46,16 @@ public:
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
     // Constructor
-    weak() : weak(nullptr) {}
+    weak() {
+        // Create state
+        _ptr = nullptr;
+        _ptrValid = nullptr;
+        _ptrRefCounter = nullptr;
+        _isNullPtr = true;
+    }
 
     // Constructor
-    weak(std::nullptr_t null) {
+    weak(std::nullptr_t) {
         // Create state
         _ptr = nullptr;
         _ptrValid = nullptr;
@@ -155,7 +161,7 @@ private:
         ref_count_inc();
     }
 
-    void make_null() {
+    void destroy() {
         // Decrease ref counter
         ref_count_dec();
 
@@ -210,25 +216,29 @@ public:
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
     // Constructor
-    owner() : owner(nullptr) {} // TODO: Investigate if owner(T*) or owner(nullptr_t) is called
-
-                                // Constructor
-    explicit owner(T* ptr) {
-        // Create new State
-        _ptr = ptr;
-        _ptrValid = new bool(true);
-        _ptrRefCounter = new uint32_t(0);
-
-        // Increase ref counter
-        ref_count_inc();
-    }
-
-    // Constructor
-    owner(nullptr_t null) {
+    owner() {
         // Nullpointer State
         _ptr = nullptr;
         _ptrValid = nullptr;
         _ptrRefCounter = nullptr;
+    }
+
+    owner(std::nullptr_t) {
+        // Nullpointer State
+        _ptr = nullptr;
+        _ptrValid = nullptr;
+        _ptrRefCounter = nullptr;
+    }
+
+    // Constructor
+    explicit owner(T* ptr) {
+        // Create new State
+        _ptr = ptr;
+        _ptrValid = new bool( true );
+        _ptrRefCounter = new uint32_t( 0 );
+
+        // Increase ref counter
+        ref_count_inc();
     }
 
     // Copy-Constructor
@@ -250,11 +260,7 @@ public:
 
     // Destructor
     ~owner() {
-        if (_ptr != nullptr) {
-            invalidate_pointer();
-            ref_count_dec();
-            delete _ptr;
-        }
+        destroy();
     }
 
     inline T* operator->() const { return _ptr; }
@@ -262,34 +268,25 @@ public:
     T* release() {
         T* oldPtr = _ptr;
 
-        if (_ptr != nullptr) {
-            invalidate_pointer();
-            ref_count_dec();
-        }
-
-        _ptr = nullptr;
-        _ptrValid = nullptr;
-        _ptrRefCounter = nullptr;
+        destroy();
 
         return oldPtr;
     }
 
     void destroy() {
-        if (_ptr != nullptr) {
-            invalidate_pointer();
-            ref_count_dec();
-            delete _ptr;
-
-            _ptr = nullptr;
-            _ptrValid = nullptr;
-            _ptrRefCounter = nullptr;
-        }
+        invalidate_pointer();
+        ref_count_dec();
+        delete _ptr;
+        
+        _ptr = nullptr;
+        _ptrValid = nullptr;
+        _ptrRefCounter = nullptr;
     }
 
     // Copy Assignment
     owner<T>&       operator=(const owner<T>& orig) = delete;
 
-    owner<T>&       operator=(const nullptr_t& orig ) {
+    owner<T>&       operator=(const std::nullptr_t& orig ) {
         destroy();
         return *this;
     }
@@ -297,6 +294,8 @@ public:
     // Move assignment
     template<typename U> // needed for move assign inherent types
     owner<T>&       operator=(owner<U>&& orig) {
+        destroy();
+
         // Move state
         _ptr = orig._ptr;
         _ptrValid = orig._ptrValid;
@@ -319,8 +318,8 @@ public:
     bool            operator== (const owner& other) const { return (_ptr == other._ptr); }
     bool            operator!= (const owner& other) const { return !(this == other); }
 
-    bool            operator== (const nullptr_t &other) const { return (_ptr == other); }
-    bool            operator!= (const nullptr_t &other) const { return !(this == other); }
+    bool            operator== (const std::nullptr_t) const { return _ptr == nullptr; }
+    bool            operator!= (const std::nullptr_t) const { return _ptr != nullptr; }
 
     inline weak<T>  get_non_owner() {
         if (_ptr == nullptr)
@@ -338,15 +337,19 @@ private:
     template <typename U>  friend class owner; // needed for move assign inherent types
 
     inline void invalidate_pointer() {
-        (*_ptrValid) = false;
+        if ( _ptrValid != nullptr ) {
+            (*_ptrValid) = false;
+        }
     }
 
     inline void ref_count_dec() {
-        (*_ptrRefCounter)--;
+        if ( _ptrRefCounter != nullptr ) {
+            (*_ptrRefCounter)--;
 
-        if ((*_ptrRefCounter) == 0) {
-            delete _ptrValid;
-            delete _ptrRefCounter;
+            if ( (*_ptrRefCounter) == 0 ) {
+                delete _ptrValid;
+                delete _ptrRefCounter;
+            }
         }
     }
 
