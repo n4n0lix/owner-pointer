@@ -9,6 +9,8 @@
 
 // Std-Includes
 #include <utility>
+#include <type_traits>
+#include <typeinfo>
 
 #ifdef  OWNER_VECTOR_EXT
     #include <vector>
@@ -39,7 +41,7 @@ class weak
 {
     template<typename T>             friend class owner;
     template<typename T, typename U> friend weak<T> static_weak_cast(weak<U> u);
-
+    template<typename T>             friend class enable_weak_from_this;
 public:
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*                        Public                          */
@@ -188,6 +190,42 @@ private:
 
 };
 
+
+//
+// enable weak from this
+/////////////////////////////////////////////////////////////////
+
+template<typename T>
+class enable_weak_from_this {
+public:
+    void __enable_weak_from_this( bool* ptrValid, uint32_t* ptrRefCounter ) {
+        _ptrValid = ptrValid;
+        _ptrRefCounter = ptrRefCounter;
+    }
+
+protected:
+    // Constructor
+    enable_weak_from_this() { }
+
+    // Destructor
+    ~enable_weak_from_this() { }
+
+    // Copy-Constructor
+    enable_weak_from_this( enable_weak_from_this const & ) { }
+
+    enable_weak_from_this& operator=( enable_weak_from_this const & ) {
+        return *this;
+    }
+
+    weak<T> get_non_owner() {
+        return weak<T>( (T*)this, _ptrValid, _ptrRefCounter );
+    }
+
+private:
+    bool*       _ptrValid;
+    uint32_t*   _ptrRefCounter;
+};
+
 //
 //   owner
 ////////////////////////////////////////////////////////////////
@@ -212,7 +250,7 @@ public:
     }
 
     // Constructor
-    explicit owner(T* ptr) {
+    explicit owner( T* ptr ) {
         // Create new State
         _ptr = ptr;
         _ptrValid = new bool( true );
@@ -220,6 +258,11 @@ public:
 
         // Increase ref counter
         ref_count_inc();
+
+        //
+        if ( std::is_base_of<enable_weak_from_this<T>, T>::value ) {
+            ((enable_weak_from_this<T>*)_ptr)->__enable_weak_from_this( _ptrValid, _ptrRefCounter );
+        }
     }
 
     // Copy-Constructor
@@ -234,9 +277,7 @@ public:
         _ptrRefCounter = orig._ptrRefCounter;
 
         // Initialize orig to nullptr
-        orig._ptr = nullptr;
-        orig._ptrValid = nullptr;
-        orig._ptrRefCounter = nullptr;
+        orig.make_null();
     }
 
     // Destructor
@@ -268,7 +309,9 @@ public:
     owner<T>&       operator=(const owner<T>& orig) = delete;
 
     owner<T>&       operator=(const std::nullptr_t&) {
+        // Clear this state
         destroy();
+
         return *this;
     }
 
@@ -352,8 +395,8 @@ private:
 /////////////////////////////////////////////////////////////////
 
 template<typename T, typename... Args>
-owner<T> make_owner(Args&&... args) {
-    return owner<T>(new T(std::forward<Args>(args)...));
+owner<T> make_owner( Args&&... args ) {
+    return owner<T>( new T( std::forward<Args>( args )... ) );
 }
 
 template<typename T, typename U>
