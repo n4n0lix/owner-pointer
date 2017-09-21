@@ -205,20 +205,26 @@ public:
 
 protected:
     // Constructor
-    enable_weak_from_this() { }
+    enable_weak_from_this() : _ptrValid(nullptr), _ptrRefCounter(nullptr) { }
 
     // Destructor
     ~enable_weak_from_this() { }
 
     // Copy-Constructor
-    enable_weak_from_this( enable_weak_from_this const & ) { }
+    enable_weak_from_this( enable_weak_from_this const &orig ) { }
 
     enable_weak_from_this& operator=( enable_weak_from_this const & ) {
         return *this;
     }
 
-    weak<T> get_non_owner() {
-        return weak<T>( (T*)this, _ptrValid, _ptrRefCounter );
+    inline weak<T> get_non_owner() {
+        if ( _ptrValid != nullptr ) {
+            return weak<T>( (T*)this, _ptrValid, _ptrRefCounter );
+        }
+        else {
+            return weak<T>(nullptr);
+        }
+        
     }
 
 private:
