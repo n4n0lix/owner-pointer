@@ -18,7 +18,7 @@ enable_weak_from_this:
     class MyClass : public enable_weak_from_this<MyClass> {
     
         void someFunc(OtherClass& o) {
-          o.set_parent( this.get_non_owner ); // Requires MyClass to be wrapped by owner<> or it returns a weak<nullptr>
+          o.set_parent( this.get_non_owner() ); // Requires MyClass to be wrapped by owner<> or it returns a weak<nullptr>
         }
     }
     
