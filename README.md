@@ -22,6 +22,21 @@ enable_weak_from_this:
         }
     }
     
+## overhead
+Resource overhead per managed resource:
+- 1 bool* if the managed resource is still valid
+- 1 uint32_t* for reference counting
+
+Performance overhead per managed resource:
+- Overhead at owner<> creation
+- Overhead at owner<> destruction
+- Overhead at weak<> creation
+- Overhead at weak<> copying 
+- Overhead at weak<> destruction
+- No overhead at accessing the managed resource
+
+*... or just have a look into the code yourself :)*
+    
 ## faq
 *Why do I get memory leaks when using owner/weak with maps?*
 - Use `map.emplace()` (C++11) to insert objects into the map
