@@ -35,7 +35,7 @@ Performance overhead per managed resource:
 - Overhead at weak<> destruction
 - No overhead at accessing the managed resource
 
-*... or just have a look into the code yourself :)*
+*... this might be wrong, but if you really care about the overhead just have a look into the code yourself :)*
     
 ## faq
 *Why do I get memory leaks when using owner/weak with maps?*
@@ -48,5 +48,5 @@ Performance overhead per managed resource:
 *Why does `this.get_non_owner()` result in a `weak<>` nullptr?*
 - This happens if the object's lifetime is not managed by `owner<>`.
 
-*How can I have multiple `owner<>` in a vector with different pointer types?
+*How can I have multiple `owner<>` in a vector with different pointer types?*
 - Use `owner_t` or `weak_t`, for example `vector<owner_t>` or `vector<weak_t>`.
