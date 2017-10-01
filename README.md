@@ -47,3 +47,6 @@ Performance overhead per managed resource:
 
 *Why does `this.get_non_owner()` result in a `weak<>` nullptr?*
 - This happens if the object's lifetime is not managed by `owner<>`.
+
+*How can I have multiple `owner<>` in a vector with different pointer types?
+- Use `owner_t` or `weak_t`, for example `vector<owner_t>` or `vector<weak_t>`.
