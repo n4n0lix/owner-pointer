@@ -153,12 +153,13 @@ public:
     template<typename U>
     inline bool operator!= (const owner<U> &y) const { return !(_ptr == y.get()); }
 
+    // Returns true if the ptr is usable (a valid object and not a nullptr)
     inline bool ptr_is_usable() const
     {
         return (_ptr == nullptr) ? false : (*_ptrValid);
     }
 
-    // Determines if it's safe to use the ptr retrieved from get(). Does not ensure that the ptr is not null!
+    // Returns true if the ptr is pointing to a valid address (a valid object and a nullptr)
     inline bool ptr_is_valid() const
     {
         return (_ptr == nullptr) ? true : (*_ptrValid);
