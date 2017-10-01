@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-    
+
 #pragma once
 
 #define OWNER_MEM_LEAK_DET
@@ -58,8 +58,10 @@ template<typename T> class owner;
 //   weak
 ////////////////////////////////////////////////////////////////
 
+class weak_t { };
+
 template<typename T>
-class weak
+class weak : public weak_t
 {
     template<typename T>             friend class owner;
     template<typename T, typename U> friend weak<T> static_weak_cast(weak<U> u);
@@ -138,6 +140,7 @@ public:
         return *this;
     }
 
+    inline T&   operator *() const { return *ptr; }
     inline T*   operator->() const { return _ptr; }
     inline T*   get()        const { return _ptr; }
 
@@ -149,6 +152,11 @@ public:
 
     template<typename U>
     inline bool operator!= (const owner<U> &y) const { return !(_ptr == y.get()); }
+
+    inline bool ptr_is_usable() const
+    {
+        return (_ptr == nullptr) ? false : (*_ptrValid);
+    }
 
     // Determines if it's safe to use the ptr retrieved from get(). Does not ensure that the ptr is not null!
     inline bool ptr_is_valid() const
@@ -258,8 +266,10 @@ private:
 //   owner
 ////////////////////////////////////////////////////////////////
 
+class owner_t {};
+
 template<typename T>
-class owner
+class owner : public owner_t
 {
     template<typename T> friend owner<T> make_owner(T* ptr);
 
@@ -313,6 +323,7 @@ public:
         destroy();
     }
 
+    inline T& operator *() const { return *ptr; }
     inline T* operator->() const { return _ptr; }
     inline T* get() const { return _ptr; }
     T* release() {
@@ -444,7 +455,7 @@ struct weak_less {
 
 #ifdef  OWNER_VECTOR_EXT
 template<typename T>
-owner<T> extract_owner(std::vector<owner<T>>& vec, weak<T> ptr) {
+owner<T>&& extract_owner(std::vector<owner<T>>& vec, weak<T> ptr) {
     auto it = vec.begin();
     for (; it != vec.end(); ++it) {
         if (it->get() == ptr.get()) break;
@@ -456,7 +467,7 @@ owner<T> extract_owner(std::vector<owner<T>>& vec, weak<T> ptr) {
         return std::move(retval);
     }
 
-    return nullptr;
+    return std::move( owner<T>( nullptr ) );
 }
 
 template<typename T>
