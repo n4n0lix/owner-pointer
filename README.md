@@ -40,7 +40,7 @@ Performance overhead per managed resource:
 ## faq
 *Why do I get memory leaks when using owner/weak with maps?*
 - Use `map.emplace()` (C++11) to insert objects into the map
-- Make sure your object has a destructor defined, even if its just `~MyClass() = default;`
+- Make sure your object has a destructor defined, for example in inheritance don't forget to declare virtual destructors (`virtual ~MyClass() = default;` is enough)
 
 *How can I get `weak<>` from `this`?*
 - The class need to inheret from `enable_weak_from_this<T>` with `T` being the class itself to get the protected method `get_non_owner()`. Be aware that this method only returns a valid `weak<>` if the object's lifetime is managed by `owner<>`.
