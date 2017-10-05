@@ -35,3 +35,9 @@ enable_weak_from_this:
 
 *How can I have multiple `owner<>` in a vector with different pointer types?*
 - Use `owner_t` or `weak_t`, for example `vector<owner_t>` or `vector<weak_t>`.
+
+## todo features
+
+- provide custom deleter
+- implicit conversion from unique_ptr
+- non_owner<> class, that does nothing except flagging that the pointer is not owned
