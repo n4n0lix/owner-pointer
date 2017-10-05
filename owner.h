@@ -76,7 +76,6 @@ public:
 
     // Constructor
     weak(std::nullptr_t) {
-        // Create state
         make_null();
     }
 
@@ -87,7 +86,6 @@ public:
         _ptrValid = orig._ptrValid;
         _ptrRefCounter = orig._ptrRefCounter;
 
-        // Increase ref counter
         ref_count_inc();
     }
 
@@ -98,7 +96,6 @@ public:
         _ptrValid = orig._ptrValid;
         _ptrRefCounter = orig._ptrRefCounter;
 
-        // Initialize orig to nullptr
         orig.make_null();
     }
 
@@ -109,7 +106,6 @@ public:
 
     // Copy assignment
     weak<T>&       operator=(const weak<T>& orig) {
-        // Clear state
         destroy();
 
         // Copy state
@@ -117,16 +113,14 @@ public:
         _ptrValid = orig._ptrValid;
         _ptrRefCounter = orig._ptrRefCounter;
 
-        // Increase ref counter
         ref_count_inc();
 
         return *this;
     }
 
-    // Move assignment
-    template<typename U> // needed for move assign inherent types
+    // Move assignment (for inherent types)
+    template<typename U>
     weak<T>&       operator=(weak<U>&& orig) {
-        // Clear state
         destroy();
 
         // Move state
@@ -134,7 +128,6 @@ public:
         _ptrValid = orig._ptrValid;
         _ptrRefCounter = orig._ptrRefCounter;
 
-        // Initialize orig to nullptr
         orig.make_null();
 
         return *this;
@@ -159,7 +152,7 @@ public:
         return (_ptr == nullptr) ? false : (*_ptrValid);
     }
 
-    // Returns true if the ptr is pointing to a valid address (a valid object and a nullptr)
+    // Returns true if the ptr is pointing to a valid address (a valid object or a nullptr)
     inline bool ptr_is_valid() const
     {
         return (_ptr == nullptr) ? true : (*_ptrValid);
@@ -176,7 +169,6 @@ private:
         _ptrValid = ptrValid;
         _ptrRefCounter = ptrInsCounter;
 
-        // Increase ref counter
         ref_count_inc();
     }
 
@@ -187,10 +179,7 @@ private:
     }
 
     inline void destroy() {
-        // Decrease ref counter
         ref_count_dec();
-
-        // Delete state
         make_null();
     }
 
@@ -229,6 +218,7 @@ private:
 template<typename T>
 class enable_weak_from_this {
 public:
+    // This method will be called by owner<> constructor
     void __enable_weak_from_this( bool* ptrValid, uint32_t* ptrRefCounter ) {
         _ptrValid = ptrValid;
         _ptrRefCounter = ptrRefCounter;
@@ -249,9 +239,11 @@ protected:
     }
 
     inline weak<T> get_non_owner() {
+        // Case: owned by an owner<>
         if ( _ptrValid != nullptr ) {
             return weak<T>( (T*)this, _ptrValid, _ptrRefCounter );
         }
+        // Case: not owned by an owner<>
         else {
             return weak<T>(nullptr);
         }
@@ -284,7 +276,6 @@ public:
     owner() : owner(nullptr) {}
 
     owner(std::nullptr_t) {
-        // Nullpointer State
         make_null();
     }
 
@@ -295,10 +286,9 @@ public:
         _ptrValid = new bool( true );
         _ptrRefCounter = new uint32_t( 0 );
 
-        // Increase ref counter
         ref_count_inc();
 
-        //
+        // enable_weak_from_this support if interface implemented
         if ( std::is_base_of<enable_weak_from_this<T>, T>::value ) {
             ((enable_weak_from_this<T>*)_ptr)->__enable_weak_from_this( _ptrValid, _ptrRefCounter );
         }
@@ -307,15 +297,14 @@ public:
     // Copy-Constructor
     owner(const owner<T>&  orig) = delete;
 
-    // Move-Constructor
-    template<typename U> // needed for move assign inherent types
+    // Move-Constructor (for inherent types)
+    template<typename U>
     owner(owner<U>&& orig) {
         // Move state
         _ptr = orig._ptr;
         _ptrValid = orig._ptrValid;
         _ptrRefCounter = orig._ptrRefCounter;
 
-        // Initialize orig to nullptr
         orig.make_null();
     }
 
@@ -358,7 +347,6 @@ public:
     // Move assignment
     template<typename U> // needed for move assign inherent types
     owner<T>&       operator=(owner<U>&& orig) {
-        // Clear this state
         destroy();
 
         // Move state
@@ -366,7 +354,6 @@ public:
         _ptrValid = orig._ptrValid;
         _ptrRefCounter = orig._ptrRefCounter;
 
-        // Initialize orig to nullptr
         orig.make_null();
 
         return *this;
