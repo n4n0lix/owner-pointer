@@ -1,7 +1,7 @@
 # owner
-The idea is to have a `unique_ptr<>`, but also the ability to hand out non-owning pointers to the same object, who know when that `unique_ptr<>` gets deleted. 
+The idea is to have a `unique_ptr` style owning pointer and the ability to hand out non-owning pointers that know when the object gets deleted. This smart pointer should be treated as an addition to `unique_ptr` and `shared_ptr`, as it's covering the gray area between those two and has it's unique areas of application.
 
-Et voilá, `owner<>` and `weak<>` were born! I'm currently using it in my private game-engine project with `vector< owner<> >`, `vector< weak<> >` `map< XXX, owner<> >`, `map< weak<>, XXX >` and `map< XXX, weak<> >`.
+I haven't investigated the performance yet, but I assume due to reference counting *and* managing the validity of the pointer it will be slightly slower than `unique_ptr` and `shared_ptr`. The only exception is accessing the pointer, which is with zero overhead.
 
 ## examples
 Basic usage:
@@ -21,21 +21,6 @@ enable_weak_from_this:
           o.set_parent( this.get_non_owner() ); // Requires MyClass to be wrapped by owner<> or it returns a weak<nullptr>
         }
     }
-    
-## overhead
-Resource overhead per managed resource:
-- 1 bool* if the managed resource is still valid
-- 1 uint32_t* for reference counting
-
-Performance overhead per managed resource:
-- Overhead at owner<> creation
-- Overhead at owner<> destruction
-- Overhead at weak<> creation
-- Overhead at weak<> copying 
-- Overhead at weak<> destruction
-- No overhead at accessing the managed resource
-
-*... this might be wrong, but if you really care about the overhead just have a look into the code yourself :)*
     
 ## faq
 *Why do I get memory leaks when using owner/weak with maps?*
