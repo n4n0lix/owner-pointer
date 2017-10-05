@@ -40,4 +40,4 @@ enable_weak_from_this:
 
 - provide custom deleter
 - implicit conversion from unique_ptr
-- non_owner<> class, that does nothing except flagging that the pointer is not owned
+- non_owner class, that does nothing except flagging that the pointer is not owned.
