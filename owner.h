@@ -133,7 +133,7 @@ public:
         return *this;
     }
 
-    inline T&   operator *() const { return *ptr; }
+    inline T&   operator *() const { return *_ptr; }
     inline T*   operator->() const { return _ptr; }
     inline T*   get()        const { return _ptr; }
 
