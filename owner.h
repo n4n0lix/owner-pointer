@@ -65,7 +65,6 @@ class weak : public weak_t
 {
     template<typename T>             friend class owner;
     template<typename U>             friend class weak;
-    template<typename T, typename U> friend weak<T> static_weak_cast(weak<U> u);
     template<typename T>             friend class enable_weak_from_this;
 public:
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -438,14 +437,6 @@ private:
 template<typename T, typename... Args>
 owner<T> make_owner( Args&&... args ) {
     return owner<T>( new T( std::forward<Args>( args )... ) );
-}
-
-template<typename T, typename U>
-weak<T> static_weak_cast(weak<U> u) {
-    if (u.get() == nullptr)
-        return weak<T>(nullptr);
-    else
-        return weak<T>((T*)u._ptr, u._ptrValid, u._ptrRefCounter);
 }
 
 template<typename T>
