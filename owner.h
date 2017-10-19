@@ -130,7 +130,7 @@ public:
     }
 
     // Casting to inherent type
-    template <typename U, typename std::enable_if<std::is_base_of<T, U>::value>::type* = nullptr>
+    template <typename U, typename std::enable_if<std::is_base_of<U, T>::value>::type* = nullptr>
     explicit operator weak<U>() const
     {
         return weak<U>( (U*) _ptr, _ptrValid, _ptrRefCounter );
@@ -193,12 +193,12 @@ private:
 
     inline uint32_t ref_count()
     {
-        // Return 1 in case the pointer is a nullptr, because
-        // - we never want to try delete NULL, although this should not throw an exception.
-        // - if a user uses reference count to check if the pointer is usable
-        // - it should be consistent > 0, as we can only call this function on a pointer that 
-        //   points to the 'object' and therefore this function never should return 0
-        
+        // Return 1 in case the pointer is a nullptr, because		
+        // - we never want to try delete NULL, although this should not throw an exception.		
+        // - if a user uses reference count to check if the pointer is usable		
+        // - it should be consistent > 0, as we can only call this function on a pointer that 		
+        //   points to the 'object' and therefore this function never should return 0		
+
         return (_ptr == nullptr) ? 1 : *_ptrRefCounter;
     }
 
@@ -292,7 +292,6 @@ public:
 
     // Constructor
     explicit owner( T* ptr ) {
-        // Create new State
         _ptr = ptr;
         _ptrValid = new bool( true );
         _ptrRefCounter = new uint32_t( 0 );
