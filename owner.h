@@ -193,6 +193,12 @@ private:
 
     inline uint32_t ref_count()
     {
+        // Return 1 in case the pointer is a nullptr, because
+        // - we never want to try delete NULL, although this should not throw an exception.
+        // - if a user uses reference count to check if the pointer is usable
+        // - it should be consistent > 0, as we can only call this function on a pointer that 
+        //   points to the 'object' and therefore this function never should return 0
+        
         return (_ptr == nullptr) ? 1 : *_ptrRefCounter;
     }
 
@@ -281,7 +287,6 @@ public:
     owner() : owner(nullptr) {}
 
     owner(std::nullptr_t) {
-        // Nullpointer State
         make_null();
     }
 
@@ -292,10 +297,9 @@ public:
         _ptrValid = new bool( true );
         _ptrRefCounter = new uint32_t( 0 );
 
-        // Increase ref counter
         ref_count_inc();
 
-        //
+        // support getting weak from `this`
         if ( std::is_base_of<enable_weak_from_this<T>, T>::value ) {
             ((enable_weak_from_this<T>*)_ptr)->__enable_weak_from_this( _ptrValid, _ptrRefCounter );
         }
