@@ -31,7 +31,7 @@ enable_weak_from_this:
 - The class need to inheret from `enable_weak_from_this<T>` with `T` being the class itself to get the protected method `get_non_owner()`. Be aware that this method only returns a valid `weak<>` if the object's lifetime is managed by `owner<>`.
 
 *Why does `this.get_non_owner()` result in a `weak<>` nullptr?*
-- This happens if the object's lifetime is not managed by `owner<>`.
+- This happens if the object's lifetime is not managed by `owner<>` and/or the object's class doesn't inherit from `enable_weak_from_this<>`.
 
 *How can I have multiple `owner<>` in a vector with different pointer types?*
 - Use `owner_t` or `weak_t`, for example `vector<owner_t>` or `vector<weak_t>`.
