@@ -1,7 +1,7 @@
 # owner
 The idea is to have a `unique_ptr` style owning pointer and the ability to hand out non-owning pointers that know when the object gets deleted. This smart pointer should be treated as an addition to `unique_ptr` and `shared_ptr`, as it's covering the gray area between those two and has it's unique areas of application.
 
-I haven't investigated the performance yet, but I assume due to reference counting *and* managing the validity of the pointer it will be slightly slower than `unique_ptr` and `shared_ptr`. The only exception is accessing the pointer, which is with zero overhead.
+I haven't investigated the performance yet, but I assume due to reference counting *and* managing the validity of the pointer it will be slightly slower than `unique_ptr` and `shared_ptr`. The only exception is accessing the pointer, which shouldn't have any overhead.
 
 ## examples
 Basic usage:
