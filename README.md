@@ -26,6 +26,9 @@ enable_weak_from_this:
 I use this smartpointer for example in a case where I have a `World` that owns multiple `GameObject` and a `Renderer`. `GameObject` and `World` knows nothing about `Renderer` and `Renderer` doesn't really care about `World`, how long the `GameObject` lives, if it gets replaced, or even deleted. All it cares about is that *if* it observes a `GameObject` that its valid and accessable.
     
 ## faq
+*Why not use `shared_ptr<>` and `weak_ptr<>`?*
+With `shared_ptr<>` and `weak_ptr<>` you as soon as you give out one of both to code you don't control, you have no control over the object ownership, because if some external code decides to turn the `weak_ptr` into a `shared_ptr` that code decides when the object gets deleted. With `owner<>` and `weak<>` the code that literally owns the object decides when it gets deleted.
+
 *Why do I get memory leaks when using owner/weak with maps?*
 - Use `map.emplace()` (C++11) to insert objects into the map
 - Make sure your object has a destructor defined, for example in inheritance don't forget to declare virtual destructors (`virtual ~MyClass() = default;` is enough)
