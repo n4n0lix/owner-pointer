@@ -23,7 +23,7 @@ enable_weak_from_this:
     }
     
 ## application fields
-I use this smartpointer for example in a case where I have a `GameObject` and an object `Renderer`. `GameObject` knows nothing about the `Renderer` and the `Renderer` doesn't really care how long the `GameObject` lives, or if it gets replaced by something else, `Renderer` just cares that the `GameObject` it observes is either `nullptr` or a valid `GameObject`.
+I use this smartpointer for example in a case where I have a `World` that owns multiple `GameObject` and a `Renderer`. `GameObject` and `World` knows nothing about `Renderer` and `Renderer` doesn't really care about `World`, how long the `GameObject` lives, if it gets replaced, or even deleted. All it cares about is that *if* it observes a `GameObject` that its valid and accessable.
     
 ## faq
 *Why do I get memory leaks when using owner/weak with maps?*
