@@ -26,7 +26,8 @@ enable_weak_from_this:
 I use this smartpointer for example in a case where I have a `World` that owns multiple `GameObject` and a `Renderer`. `GameObject` and `World` knows nothing about `Renderer` and `Renderer` doesn't really care about `World`, how long the `GameObject` lives, if it gets replaced, or even deleted. All it cares about is that *if* it observes a `GameObject` that its valid and accessable.
     
 ## tradeoffs
-- *We get* 100% control over object lifetime and ownership *, for the price of* no threadssafety because an object can be deleted at any time by its owner.
+- **We get** 100% control over object lifetime and ownership **,for the price of** no threadssafety because an object can be deleted at any time by its owner.
+- **We get** assurance that we only access valid objects without needing their ownership **,for the price of** some memory and performance overhead.
     
 ## faq
 
