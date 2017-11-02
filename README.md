@@ -8,10 +8,40 @@ Basic usage:
 
     owner<int> ownerOfInt = make_owner<int>( 4 );
     weak<int>  weakToInt  = ownerOfInt.get_non_owner();
-    // weakToInt.ptr_is_valid() ==> true
+    
+    assert( weakToInt.ptr_is_valid() );
     
     ownerOfInt.destroy();
-    // weakToInt.ptr_is_valid() ==> false
+    
+    asser( !weakToInt.ptr_is_valid() );
+    
+GameObject/World example:
+
+    class World {
+        …
+        weak<GameObject> add( owner<GameObject> );
+    }
+
+    Class Renderer {
+        …
+        void observe( weak<GameObject> );
+        void render();
+    }
+
+    ...
+
+    World world = World();
+    Renderer renderer = Renderer();
+
+    weak<GameObject> gameObject = world.add_gameobject( make_owner<GameObject>() );
+    renderer.observer( gameObject );
+
+    while (1) {
+        world.update();     // gameObject could be deleted here
+        renderer.render();  // but renderer will notice and no longer access the ptr
+    }
+
+...
 
 enable_weak_from_this:
 
@@ -26,8 +56,8 @@ enable_weak_from_this:
 I use this smartpointer for example in a case where I have a `World` that owns multiple `GameObject` and a `Renderer`. `GameObject` and `World` knows nothing about `Renderer` and `Renderer` doesn't really care about `World`, how long the `GameObject` lives, if it gets replaced, or even deleted. All it cares about is that *if* it observes a `GameObject` that its valid and accessable.
     
 ## tradeoffs
-- **We get** 100% control over object lifetime and ownership **,for the price of** no threadssafety because an object can be deleted at any time by its owner.
-- **We get** assurance that we only access valid objects without needing their ownership **,for the price of** some memory and performance overhead.
+- **We get** 100% control over object lifetime and ownership, **for the price of** no threadssafety because an object can be deleted at any time by its owner.
+- **We get** assurance that we only access valid objects without needing their ownership, **for the price of** some memory and performance overhead.
     
 ## faq
 
